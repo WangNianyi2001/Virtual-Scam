@@ -42,7 +42,7 @@ export class Audience extends User {
 			throw new RangeError('A audience cannot be its own host');
 		let host = User.Find(hostID);
 		if(!(host instanceof Host))
-			host = new Host(hostID);
+			throw new ReferenceError('Requested host doesn\'t exist');
 		super(id);
 		this.host = host;
 		this.host.audiences.add(this);
