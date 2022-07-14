@@ -3,12 +3,14 @@ import { UserSocket, GetUserSocket } from '../user-socket.js';
 class Audience extends UserSocket {
 	constructor() {
 		super(...arguments);
-		this.addEventListener('init', function(event) {
-			this.SendMessage('init', { id: this.id });
+		this.addEventListener('fetch-meta', function(event) {
+			this.SendMessage('respond-meta', { id: this.id, hostID: '1' });
 		});
-		this.addEventListener('fail', function(event) {
-			const reason = event.data?.reason?.toString();
-			throw new Error(`Failed to fetch user data: ${reason}`);
+		this.addEventListener('init-data', function(event) {
+			const { error, reason, data } = event;
+			if(error)
+				throw new Error(reason);
+			console.log(data);
 		});
 	}
 }

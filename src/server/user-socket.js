@@ -1,34 +1,12 @@
+import { User, Host, Audience } from "./user.js";
 import EventEmitter from "events";
 
 const userSocket = new WeakMap();
 const socketUser = new WeakMap();
-const users = new WeakMap();
 
-export class User extends EventEmitter {
-	get socket() {
-		return userSocket.get(this) || null;
-	}
-
-	constructor(id) {
-		this.id = id + '';
-		users.set(this.id, this);
-	}
-
-	SendMessage(type, data = null) {
-		this.socket?.SendMessage(type, data);
-	}
-
-	Destroy() {
-		this.socket?.Destroy();
-		users.delete(this.ids);
-	}
-}
-User.Find = function(id) {
-	return users.get(id + '') || null;
-}
-
-export class UserSocket {
+export class UserSocket extends EventEmitter {
 	constructor(socket) {
+		super();
 		this.socket = socket;
 		if(this.socket.readyState === 0)
 			this.socket.onopen = this.OnOpen.bind(this);
@@ -37,31 +15,47 @@ export class UserSocket {
 		this.socket.onmessage = this.OnMessage.bind(this);
 		this.socket.onclose = this.OnClose.bind(this);
 		this.user = null;
+		this.on('respond-meta', this.OnRespondMeta.bind(this));
 	}
 
 	OnOpen() {
-		this.SendMessage('init');
+		this.SendMessage('fetch-meta');
+	}
+
+	OnRespondMeta(data) {
+		const nextMessageType = 'init-data';
+		const fail = reason => this.SendMessage(
+			nextMessageType,
+			{ error: true, reason }
+		);
+		const { id, hostID } = data;
+		const targetType = hostID === null ? Host : Audience;
+		let target = User.Find(id);
+		if(!target) {
+			try {
+				target = new targetType(id, hostID);
+			} catch(e) {
+				return fail(e.toString());
+			}
+		} else {
+			if(!(target instanceof targetType))
+				return fail('User type doesn\'t match');
+			if(target instanceof Audience && target.host?.id !== hostID)
+				return fail('Host ID doesn\'t match');
+		}
+		this.user = target;
+		userSocket.set(this.user, this);
+		socketUser.set(this, this.user);
+		this.user.emit('connect', this);
+		this.SendMessage(nextMessageType, {
+			error: false,
+			data: target
+		});
 	}
 
 	OnMessage(ev) {
 		const { type, data } = JSON.parse(ev.data);
-		switch(type) {
-			case 'init':
-				const user = User.Find(data.id);
-				if(!user) {
-					this.SendMessage('fail', { 'reason': 'User not found' });
-					this.Destroy();
-					return;
-				}
-				this.user = user;
-				userSocket.set(this.user, this);
-				socketUser.set(this, this.user);
-				this.user.emit('connect', this);
-				break;
-			default:
-				this.user?.emit(type, data);
-				break;
-		}
+		(this.user || this).emit(type, data);
 	}
 
 	OnClose() {
