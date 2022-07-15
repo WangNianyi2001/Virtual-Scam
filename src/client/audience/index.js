@@ -9,22 +9,21 @@ class AudienceSocket extends UserSocket {
 	constructor() {
 		super(...arguments);
 		this.addEventListener('fetch-meta', function() {
-			this.SendMessage('respond-meta', { id: this.id, hostID: Cookies.get('hostID') });
+			this.SendCommand('respond-meta', { id: this.id, hostID: Cookies.get('hostID') });
 		});
-		this.addEventListener('init-data', function({ message }) {
-			const { error, reason, data } = message.data;
+		this.addEventListener('init-data', function({ command }) {
+			const { error, reason, data } = command.data;
 			if(error) {
 				document.getElementById('error').innerText = reason;
 				throw new Error(reason);
 			}
-			document.getElementById('user-id').innerText = data.id;
-			document.getElementById('host-id').innerText = data.host.id;
-			Cookies.set('hostID', data.host.id);
-			audience = new Audience(this);
+			audience = window.audience = this.user = new Audience(this, data);
+			document.getElementById('user-id').innerText = audience.id;
+			document.getElementById('host-id').innerText = audience.hostID;
+			Cookies.set('hostID', audience.hostID);
 			Page.Find('inbox').Show();
 			audience.PerformAction('add-contact', { contact: 'Dad' });
 			audience.PerformAction('receive-message', { contact: 'Dad', content: 'whatup son' });
-			setTimeout(() => audience.PerformAction('remove-contact', { contact: 'Dad' }), 1000);
 		});
 	}
 }

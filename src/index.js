@@ -11,7 +11,7 @@ setTimeout(() => app.listen(config.port, function() {
 }));
 
 // Statically serve frontend client
-app.use(express.static('src/client/'));
+app.use(express.static('src/'));
 
 // Timestamp validation
 const timestamp = +new Date() + '';

@@ -1,4 +1,5 @@
 import EventEmitter from "events";
+import { userSocket } from "./user-socket.js";
 
 export const users = new Map();
 
@@ -13,10 +14,22 @@ export class User extends EventEmitter {
 			throw new ReferenceError(`User with ID ${id} already exists`);
 		this.id = id + '';
 		users.set(this.id, this);
+		this.actions = new Map();
+		this.on('action', ({ type, data }) => this.PerformAction(type, data));
 	}
 
-	SendMessage(type, data = null) {
-		this.socket?.SendMessage(type, data);
+	SendCommand(type, data = null) {
+		this.socket?.SendCommand(type, data);
+	}
+
+	SetAction(type, handler) {
+		this.actions.set(type, handler);
+	}
+	PerformAction(type, data) {
+		this.actions.get(type)?.call(this, data);
+	}
+	SendAction(type, data) {
+		this.SendCommand('action', { type, data });
 	}
 
 	Destroy() {
@@ -30,24 +43,36 @@ User.Find = function(id) {
 };
 
 export class Host extends User {
+	get audiences() {
+		return new Set([...this.audiencesID].map(id => User.Find(id)));
+	}
+
 	constructor(id) {
 		super(id);
-		this.audiences = new Set();
+		this.audiencesID = new Set();
+
+		this.SetAction('broadcast-action', function({ type, data }) {
+			for(const audience of this.audiences)
+				audience.SendAction(type, data);
+		});
 	}
 };
 
 export class Audience extends User {
+	get host() {
+		return User.Find(this.hostID);
+	}
+
 	constructor(id, hostID) {
-		let host = User.Find(hostID);
-		if(!(host instanceof Host))
-			throw new ReferenceError('Requested host doesn\'t exist');
 		super(id);
-		this.host = host;
-		this.host.audiences.add(this);
+		this.hostID = hostID;
+		if(!(this.host instanceof Host))
+			throw new ReferenceError('Requested host doesn\'t exist');
+		this.host.audiencesID.add(this.id);
 	}
 
 	Destroy() {
-		this.host.audiences.delete(this);
+		this.host.audiencesID.delete(this.id);
 		super.Destroy();
 	}
 };

@@ -5,24 +5,28 @@ export class UserSocket extends EventTarget {
 	constructor(id) {
 		super();
 		this.id = id;
-		this.socket = new WebSocket(userSocketURL);
-		this.socket.onopen = this.OnOpen.bind(this);
-		this.socket.onmessage = this.OnMessage.bind(this);
-		this.socket.onclose = this.OnClose.bind(this);
+		this.ws = new WebSocket(userSocketURL);
+		this.ws.onopen = this.OnOpen.bind(this);
+		this.ws.onmessage = this.OnCommand.bind(this);
+		this.ws.onclose = this.OnClose.bind(this);
+		this.user = null;
 	}
 
 	OnOpen() {
 		console.log('Opening socket');
 	}
 
-	OnMessage(ev) {
-		const message = JSON.parse(ev.data);
-		switch(message.type) {
+	OnCommand(ev) {
+		const command = JSON.parse(ev.data);
+		switch(command.type) {
+			case 'action':
+				const { type, data } = command.data;
+				this.user?.PerformAction(type, data);
 			default:
-				const event = new Event(message.type);
-				event.message = message;
+				const event = new Event(command.type);
+				event.command = command;
 				this.dispatchEvent(event);
-				break;
+				break
 		}
 	}
 
@@ -30,8 +34,8 @@ export class UserSocket extends EventTarget {
 		console.log('Closing socket');
 	}
 
-	SendMessage(type, data = null) {
-		this.socket.send(JSON.stringify({ type, data }));
+	SendCommand(type, data = null) {
+		this.ws.send(JSON.stringify({ type, data }));
 	}
 }
 

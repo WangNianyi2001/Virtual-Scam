@@ -47,34 +47,31 @@ class Contact {
 }
 
 export default class Audience extends User {
-	constructor(socket) {
+	constructor(socket, data) {
 		super(socket);
 		this.contacts = new Map();
-		this.SetActionHandler('add-contact', ({ contact }) => this.AddContact(contact));
-		this.SetActionHandler('remove-contact', ({ contact }) => this.RemoveContact(contact));
-		this.SetActionHandler('receive-message', ({ contact, content }) => this.ReceiveMessage(contact, content));
-	}
+		this.id = data.id;
+		this.hostID = data.hostID;
 
-	AddContact(contact) {
-		if(!(contact instanceof Contact))
-			contact = new Contact(contact);
-		this.contacts.set(contact.name, contact);
-	}
-
-	RemoveContact(contact) {
-		if(!(contact instanceof Contact))
-			contact = this.contacts.get(contact);
-		if(!(contact instanceof Contact))
-			return;
-		contact.Destroy();
-		this.contacts.delete(contact);
-	}
-
-	ReceiveMessage(contact, content) {
-		if(!(contact instanceof Contact))
-			contact = this.contacts.get(contact);
-		if(!(contact instanceof Contact))
-			return;
-		contact.AddMessage(content, false);
+		this.SetAction('add-contact', function({ contact }) {
+			if(!(contact instanceof Contact))
+				contact = new Contact(contact);
+			this.contacts.set(contact.name, contact);
+		});
+		this.SetAction('remove-contact', function({ contact }) {
+			if(!(contact instanceof Contact))
+				contact = this.contacts.get(contact);
+			if(!(contact instanceof Contact))
+				return;
+			contact.Destroy();
+			this.contacts.delete(contact);
+		});
+		this.SetAction('receive-message', function({ contact, content }) {
+			if(!(contact instanceof Contact))
+				contact = this.contacts.get(contact);
+			if(!(contact instanceof Contact))
+				return;
+			contact.AddMessage(content, false);
+		});
 	}
 }

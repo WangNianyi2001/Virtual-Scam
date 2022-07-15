@@ -1,17 +1,20 @@
 export default class User {
 	constructor(socket) {
 		this.socket = socket;
-		this.actionHandlers = new Map();
+		this.actions = new Map();
 	}
 
-	SendMessage(type, data) {
-		return this.socket.SendMessage(type, data);
+	SendCommand(type, data) {
+		return this.socket.SendCommand(type, data);
 	}
 
-	SetActionHandler(type, handler) {
-		this.actionHandlers.set(type, handler);
+	SetAction(type, handler) {
+		this.actions.set(type, handler);
 	}
 	PerformAction(type, data) {
-		this.actionHandlers.get(type)?.(data);
+		this.actions.get(type)?.call(this, data);
+	}
+	SendAction(type, data) {
+		this.SendCommand('action', { type, data });
 	}
 }
