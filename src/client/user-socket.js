@@ -1,6 +1,6 @@
 import Cookies from './js.cookie.min.mjs';
 
-const userSocketURL = `ws://${new URL(location.href).host}/`;
+const userSocketURL = `ws://${new URL(location.href).host}/user/`;
 export class UserSocket extends EventTarget {
 	constructor(id) {
 		super();
@@ -16,11 +16,11 @@ export class UserSocket extends EventTarget {
 	}
 
 	OnMessage(ev) {
-		const { type, data } = JSON.parse(ev.data);
-		switch(type) {
+		const message = JSON.parse(ev.data);
+		switch(message.type) {
 			default:
-				const event = new Event(type);
-				event.data = data;
+				const event = new Event(message.type);
+				event.message = message;
 				this.dispatchEvent(event);
 				break;
 		}

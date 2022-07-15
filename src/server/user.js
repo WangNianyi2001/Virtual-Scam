@@ -38,8 +38,6 @@ export class Host extends User {
 
 export class Audience extends User {
 	constructor(id, hostID) {
-		if(id === hostID)
-			throw new RangeError('A audience cannot be its own host');
 		let host = User.Find(hostID);
 		if(!(host instanceof Host))
 			throw new ReferenceError('Requested host doesn\'t exist');

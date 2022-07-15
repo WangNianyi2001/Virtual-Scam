@@ -39,7 +39,7 @@ app.get('/id', function(req, res) {
 
 // Web sockets
 expressWs(app);
-app.ws('/', async function(socket) {
+app.ws('/user', async function(socket) {
 	const userSocket = new UserSocket(socket);
 	do await new Promise(res => setTimeout(res, 1000));
 	while(userSocket.user);

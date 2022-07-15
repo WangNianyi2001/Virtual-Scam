@@ -1,5 +1,6 @@
-export class Control {
+export class Control extends EventTarget {
 	constructor($) {
+		super();
 		this.$ = $;
 		this.parent = null;
 		this.children = [];
@@ -36,32 +37,70 @@ export class Control {
 	}
 };
 
+export class PageEvent extends Event {
+	constructor(name, page, ...args) {
+		super(name, ...args);
+		this.page = page;
+	}
+}
+
 export class Page extends Control {
+	get name() { return this.$.id; }
+
 	constructor($) {
 		super($);
-		Page.pages.set(this.$.id, this);
+		Page.pages.add(this);
 		if(Page.current === null)
 			this.Show();
 	}
+
+	DispatchPageEvent(type) {
+		return this.dispatchEvent(new PageEvent(type, this));
+	}
+
 	Destroy() {
-		Page.pages.set(this.$, this);
+		Page.pages.delete(this);
 		super.Destroy();
 	}
+
 	Show() {
-		Page.current?.Hide();
+		if(Page.current === this)
+			return;
+		if(Page.current && !Page.current.Hide())
+			return false;
+		if(!this.DispatchPageEvent('pageshow'))
+			return false;
 		this.$.classList.add('active');
 		Page.current = this;
+		return true;
 	}
 	Hide() {
+		if(!this.DispatchPageEvent('pagehide'))
+			return false;
 		Page.current = null;
 		this.$.classList.remove('active');
+		return true;
 	}
 }
 Page.current = null;
-Page.pages = new Map();
-Page.Find = function(id) {
-	return Page.pages.get(id) || null;
+Page.pages = new Set();
+Page.Find = function(name) {
+	for(const page of Page.pages)
+		if(page.name === name)
+			return page;
+	return null;
 };
 
-for(const $section of document.body.getElementsByTagName('section'))
+document.addEventListener('click', function(ev) {
+	if('pageNav' in ev.target.dataset) {
+		const pageName = ev.target.dataset.pageNav;
+		const page = Page.Find(pageName);
+		if(!page)
+			return;
+		if(page.DispatchPageEvent('pagechoose'))
+			page.Show();
+	}
+});
+
+for(const $section of document.body.getElementsByClassName('page'))
 	new Page($section);
