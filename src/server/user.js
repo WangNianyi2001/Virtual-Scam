@@ -18,10 +18,6 @@ export class User extends EventEmitter {
 		this.on('action', ({ type, data }) => this.PerformAction(type, data));
 	}
 
-	SendCommand(type, data = null) {
-		this.socket?.SendCommand(type, data);
-	}
-
 	SetAction(type, handler) {
 		this.actions.set(type, handler);
 	}
@@ -29,7 +25,7 @@ export class User extends EventEmitter {
 		this.actions.get(type)?.call(this, data);
 	}
 	SendAction(type, data) {
-		this.SendCommand('action', { type, data });
+		this.socket.SendCommand('action', { type, data });
 	}
 
 	Destroy() {

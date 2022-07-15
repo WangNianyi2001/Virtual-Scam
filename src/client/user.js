@@ -4,10 +4,6 @@ export default class User {
 		this.actions = new Map();
 	}
 
-	SendCommand(type, data) {
-		return this.socket.SendCommand(type, data);
-	}
-
 	SetAction(type, handler) {
 		this.actions.set(type, handler);
 	}
@@ -15,6 +11,6 @@ export default class User {
 		this.actions.get(type)?.call(this, data);
 	}
 	SendAction(type, data) {
-		this.SendCommand('action', { type, data });
+		this.socket.SendCommand('action', { type, data });
 	}
 }
