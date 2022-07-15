@@ -26,6 +26,8 @@ h6 {
 	margin: 0;
 }
 
+$unread-border: crimson solid;
+
 body {
 	display: flex;
 	flex-direction: column;
@@ -49,7 +51,7 @@ body {
 		flex-grow: 1;
 		display: flex;
 		flex-direction: column;
-		overflow: auto;
+		overflow: hidden;
 
 		.page {
 			flex-grow: 1;
@@ -63,9 +65,13 @@ body {
 				align-items: center;
 				position: sticky;
 				top: 0;
-				height: 2em;
-				font-weight: bold;
+				height: 3em;
 				background-color: lightgray;
+
+				.nav-back {
+					position: absolute;
+					left: 1em;
+				}
 			}
 
 			>main {
@@ -75,59 +81,60 @@ body {
 		}
 
 		>footer {
+			$height: 3em;
 			flex-shrink: 0;
 			display: flex;
 			justify-content: space-evenly;
-			align-items: center;
-			height: 3em;
+			align-items: stretch;
+			height: $height;
 			background: white;
 			border-top: 1px solid black;
 
+			&:not(.visible) {
+				display: none;
+			}
+
 			>* {
+				padding-inline: 1em;
+				line-height: $height;
 				color: gray;
 
 				&.active {
 					color: inherit;
 					font-weight: bold;
 				}
+
+				&.unread {
+					border-bottom: .3em $unread-border;
+				}
 			}
 		}
 	}
 }
 
-#message>main {
+#inbox>main {
 	display: flex;
 	flex-direction: column;
 	gap: 1em;
 	padding: 1em;
 
-	>.message {
+	>.entry {
 		display: flex;
-		align-items: stretch;
-		column-gap: .5em;
+		flex-direction: column;
 		border: 1px solid black;
 		padding: .5em;
 
-		>.avatar {
-			flex-shrink: 0;
-			width: 5em;
-			height: 5em;
-			background-color: red;
+		>.content {
+			flex-grow: 1;
+			max-height: 3.5em;
+			word-break: break-all;
+			word-wrap: break-word;
+			overflow: hidden;
+			@include prefix(mask-image, linear-gradient(to top, transparent, #00000022 10%, #000000 20%), moz webkit);
 		}
 
-		>.info {
-			flex-grow: 1;
-			display: flex;
-			flex-direction: column;
-
-			>.content {
-				flex-grow: 1;
-				max-height: 3.5em;
-				word-break: break-all;
-				word-wrap: break-word;
-				overflow: hidden;
-				@include prefix(mask-image, linear-gradient(to top, transparent, #00000022 10%, #000000 20%), moz webkit);
-			}
+		&.unread {
+			border-right: .8em $unread-border;
 		}
 	}
 }

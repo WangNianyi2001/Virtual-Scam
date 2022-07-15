@@ -55,7 +55,7 @@ export class Page extends Control {
 	}
 
 	DispatchPageEvent(type) {
-		return this.dispatchEvent(new PageEvent(type, this));
+		return document.dispatchEvent(new PageEvent(type, this));
 	}
 
 	Destroy() {
