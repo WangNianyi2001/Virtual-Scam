@@ -37,13 +37,6 @@ export class Control extends EventTarget {
 	}
 };
 
-export class PageEvent extends Event {
-	constructor(name, page, ...args) {
-		super(name, ...args);
-		this.page = page;
-	}
-}
-
 export class Page extends Control {
 	get name() { return this.$.id; }
 
@@ -55,7 +48,13 @@ export class Page extends Control {
 	}
 
 	DispatchPageEvent(type) {
-		return document.dispatchEvent(new PageEvent(type, this));
+		const pe = new Event(type);
+		pe.page = this;
+		if(!this.dispatchEvent(pe))
+			return false;
+		const de = new Event('page' + type);
+		de.page = this;
+		return document.dispatchEvent(de);
 	}
 
 	Destroy() {
@@ -68,14 +67,14 @@ export class Page extends Control {
 			return;
 		if(Page.current && !Page.current.Hide())
 			return false;
-		if(!this.DispatchPageEvent('pageshow'))
+		if(!this.DispatchPageEvent('show'))
 			return false;
 		this.$.classList.add('active');
 		Page.current = this;
 		return true;
 	}
 	Hide() {
-		if(!this.DispatchPageEvent('pagehide'))
+		if(!this.DispatchPageEvent('hide'))
 			return false;
 		Page.current = null;
 		this.$.classList.remove('active');
@@ -97,7 +96,7 @@ document.addEventListener('click', function(ev) {
 		const page = Page.Find(pageName);
 		if(!page)
 			return;
-		if(page.DispatchPageEvent('pagechoose'))
+		if(page.DispatchPageEvent('choose'))
 			page.Show();
 	}
 });

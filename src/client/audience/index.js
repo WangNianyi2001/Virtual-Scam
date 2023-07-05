@@ -22,8 +22,6 @@ class AudienceSocket extends UserSocket {
 			document.getElementById('host-id').innerText = audience.hostID;
 			Cookies.set('hostID', audience.hostID);
 			Page.Find('inbox').Show();
-			audience.PerformAction('add-contact', { contact: 'Dad' });
-			audience.PerformAction('receive-message', { contact: 'Dad', content: 'whatup son' });
 		});
 	}
 }
@@ -41,6 +39,17 @@ document.addEventListener('pageshow', function({ page }) {
 document.addEventListener('messagechange', function() {
 	const allRead = [...audience.contacts.values()].every(contact => contact.read);
 	$footer.querySelector('*[data-page-nav=inbox]').classList[allRead ? 'remove' : 'add']('unread');
+});
+
+document.getElementById('transfer').addEventListener('click', function() {
+	let amount = prompt('Amount of balance to transfer');
+	if(amount === null)
+		return;
+	amount = +amount;
+	if(isNaN(amount) || amount <= 0.01)
+		return alert(`Not a valid amount`);
+	audience.SetBalance(audience.balance - amount);
+	alert('Transaction succeed');
 });
 
 (async () => {
