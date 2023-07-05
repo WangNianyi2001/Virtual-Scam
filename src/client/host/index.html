@@ -16,6 +16,40 @@
 	</section>
 	<section class="page" id="created">
 		<p>Host ID: <span id="user-id"></span></p>
+		<h2>Operations</h2>
+		<h3>Broadcast message</h3>
+		<form>
+			<span>As:</span>
+			<input name="name" type="string" />
+			<span>Content:</span>
+			<input name="content" type="string" />
+			<button type="button" onclick="host.BroadcastAction('receive-message', {
+				name: this.form.name.value,
+				content: this.form.content.value
+			});">Broadcast</button>
+		</form>
+		<h3>Alert a message</h3>
+		<form>
+			<span>Audience ID:</span>
+			<input name="accountID" type="string" />
+			<span>Message:</span>
+			<input name="message" type="number" />
+			<button type="button" onclick="host.SendAction('system-alert', {
+				accountID: this.form.accountID.value,
+				message: +this.form.message.value
+			});">Change</button>
+		</form>
+		<h3>Change audience balance</h3>
+		<form>
+			<span>Audience ID:</span>
+			<input name="accountID" type="string" />
+			<span>Change by:</span>
+			<input name="amount" type="number" />
+			<button type="button" onclick="host.SendAction('change-balance', {
+				accountID: this.form.accountID.value,
+				amount: +this.form.amount.value
+			});">Change</button>
+		</form>
 	</section>
 </body>
 </html>

@@ -3,7 +3,7 @@ import { userSocket } from "./user-socket.js";
 
 export const users = new Map();
 
-export class User extends EventEmitter {
+export default class User extends EventEmitter {
 	get socket() {
 		return userSocket.get(this) || null;
 	}
@@ -36,39 +36,4 @@ export class User extends EventEmitter {
 
 User.Find = function(id) {
 	return users.get(id + '') || null;
-};
-
-export class Host extends User {
-	get audiences() {
-		return new Set([...this.audiencesID].map(id => User.Find(id)));
-	}
-
-	constructor(id) {
-		super(id);
-		this.audiencesID = new Set();
-
-		this.SetAction('broadcast-action', function({ type, data }) {
-			for(const audience of this.audiences)
-				audience.SendAction(type, data);
-		});
-	}
-};
-
-export class Audience extends User {
-	get host() {
-		return User.Find(this.hostID);
-	}
-
-	constructor(id, hostID) {
-		super(id);
-		this.hostID = hostID;
-		if(!(this.host instanceof Host))
-			throw new ReferenceError('Requested host doesn\'t exist');
-		this.host.audiencesID.add(this.id);
-	}
-
-	Destroy() {
-		this.host.audiencesID.delete(this.id);
-		super.Destroy();
-	}
 };

@@ -11,6 +11,7 @@
 <body>
 	<header>
 		<span>Host #<span id="host-id"></span></span>
+		<span>Virtual Scam</span>
 		<span>Audience #<span id="user-id"></span></span>
 	</header>
 	<main>
@@ -37,13 +38,22 @@
 				<p class="nav-back button" data-page-nav="inbox">&lt; Inbox</p>
 				<h2 class="title">Message</h2>
 			</header>
-			<main></main>
+			<main>
+				<ul class="history"></ul>
+				<footer>
+					<input id="input" type="text" placeholder="Input text" />
+					<button id="transfer">Transfer</button>
+					<button id="send">Send</button>
+				</footer>
+			</main>
 		</section>
 		<section class="page" id="wallet">
 			<header>
 				<h2 class="title">Wallet</h2>
 			</header>
-			<main></main>
+			<main>
+				<p id="balance"></p>
+			</main>
 		</section>
 		<footer>
 			<div data-page-nav="inbox" class="active">Inbox</div>

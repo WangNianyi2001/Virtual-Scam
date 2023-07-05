@@ -6,4 +6,8 @@ export default class Host extends User {
 		super(socket);
 		this.id = data.id;
 	}
+
+	BroadcastAction(type, data) {
+		this.SendAction('broadcast-action', { type, data });
+	}
 }

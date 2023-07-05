@@ -1,4 +1,6 @@
-import { User, Host, Audience } from "./user.js";
+import User from './user.js';
+import Host from './host.js';
+import Audience from './audience.js';
 import EventEmitter from "events";
 import Serialize from '../serialize.js';
 
